@@ -1,4 +1,4 @@
-// src/pages/OrderTrackingPage.jsx - FULL ENGLISH VERSION
+// src/pages/OrderTrackingPage.jsx - FIXED VERSION
 
 import React, { useState } from 'react';
 import axios from 'axios';
@@ -11,47 +11,42 @@ const OrderTrackingPage = () => {
     const [error, setError] = useState(null);
 
     const handleTrackOrder = async (e) => {
-    e.preventDefault();
-    
-    // Provera da li je ID uopšte unet
-    if (!orderId) {
-        setError('Please enter a valid Order ID.');
-        return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setOrder(null);
-    
-    try {
-        const response = await axios.get(`${BASE_URL}/orders/${orderId}`);
+        e.preventDefault();
         
-        if (response.data && response.data.data) {
-             setOrder(response.data.data);
-        } else {
-             // Ako je poziv uspešan, ali nema podataka (npr. 200 OK, ali prazan odgovor)
-             setError('Order tracking is temporarily unavailable or ID is incorrect.');
+        if (!orderId.trim()) {
+            setError('Please enter a valid Order ID.');
+            return;
         }
 
-    } catch (err) {
-        console.error("Tracking error:", err);
+        setLoading(true);
+        setError(null);
+        setOrder(null);
+        
+        try {
+            // ✅ FIXED: Use /track endpoint (public route)
+            const response = await axios.get(`${BASE_URL}/orders/track/${orderId}`);
+            
+            if (response.data && response.data.data) {
+                setOrder(response.data.data);
+            } else {
+                setError('Order tracking is temporarily unavailable or ID is incorrect.');
+            }
 
-        // Standardna provera za greške koje vraća Axios (npr. 404 Not Found)
-        if (err.response && err.response.data && err.response.data.message) {
-            // Ako backend vraća custom poruku (npr. 'Order not found' ili 'Invalid ID format')
-             setError(err.response.data.message); 
-        } else if (err.response) {
-            // Ako je greška 4xx/5xx bez body poruke
-            setError(`Error: Could not retrieve order. Status code: ${err.response.status}`);
-        } else {
-            // Greška mreže ili potpuno neočekivana greška
-            setError('A network error occurred. Please check your connection.');
+        } catch (err) {
+            console.error("Tracking error:", err);
+
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message); 
+            } else if (err.response) {
+                setError(`Error: Could not retrieve order. Status code: ${err.response.status}`);
+            } else {
+                setError('A network error occurred. Please check your connection.');
+            }
+
+        } finally {
+            setLoading(false);
         }
-
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
     const getStatusClasses = (status) => {
         switch (status) {
@@ -90,7 +85,7 @@ const OrderTrackingPage = () => {
                 />
                 <button
                     type="submit"
-                    className="mt-4 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition duration-150 font-bold cursor-pointer disabled:opacity-50 "
+                    className="mt-4 w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition duration-150 font-bold cursor-pointer disabled:opacity-50"
                     disabled={loading}
                 >
                     {loading ? 'Tracking...' : 'Track Order'}
@@ -98,7 +93,11 @@ const OrderTrackingPage = () => {
             </form>
 
             {/* ERROR MESSAGE */}
-            {error && <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center font-medium">{error}</div>}
+            {error && (
+                <div className="p-4 bg-red-100 text-red-700 rounded-lg text-center font-medium mb-4">
+                    {error}
+                </div>
+            )}
 
             {/* ORDER DETAILS DISPLAY */}
             {order && (
@@ -106,15 +105,54 @@ const OrderTrackingPage = () => {
                     <h3 className="text-2xl font-semibold mb-4 text-gray-800">Order Details:</h3>
                     
                     <p className="mb-2">
-                        <span className="font-medium">ID:</span> {order._id}
+                        <span className="font-medium">Order ID:</span> {order.orderId}
                     </p>
                     <p className="mb-2">
-                        <span className="font-medium">Total Price:</span> ${order.totalPrice.toFixed(2)}
+                        <span className="font-medium">Total Price:</span> ${order.totalPrice?.toFixed(2) || '0.00'}
                     </p>
                     <p className="mb-4">
                         <span className="font-medium">Date Placed:</span> {new Date(order.createdAt).toLocaleDateString()}
                     </p>
 
+                    {/* Shipping Address */}
+                    {order.shippingAddress && (
+                        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <h4 className="font-medium mb-2">Shipping Address:</h4>
+                            <p className="text-sm text-gray-700">
+                                {order.shippingAddress.street}, {order.shippingAddress.city}
+                                {order.shippingAddress.zip && `, ${order.shippingAddress.zip}`}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Order Items */}
+                    {order.orderItems && order.orderItems.length > 0 && (
+                        <div className="mb-4">
+                            <h4 className="font-medium mb-2">Items:</h4>
+                            <div className="space-y-2">
+                                {order.orderItems.map((item, index) => (
+                                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                        <div className="flex items-center gap-3">
+                                            {item.product?.image && (
+                                                <img 
+                                                    src={item.product.image} 
+                                                    alt={item.name} 
+                                                    className="w-12 h-12 object-cover rounded"
+                                                />
+                                            )}
+                                            <div>
+                                                <p className="font-medium">{item.name}</p>
+                                                <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                                            </div>
+                                        </div>
+                                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Current Status */}
                     <div className="mt-4 p-4 rounded-lg text-center font-bold text-lg border border-gray-200">
                         Current Status: 
                         <span 
@@ -124,46 +162,54 @@ const OrderTrackingPage = () => {
                         </span>
                     </div>
 
-                    {/* Added Order Status Visualizer */}
+                    {/* Order Status Timeline */}
                     <div className="mt-8">
                         <h4 className="font-semibold mb-4 text-center text-lg">Order Progress</h4>
                         <OrderStatusTimeline currentStatus={order.orderStatus} />
                     </div>
 
+                    {/* Delivered Date */}
+                    {order.deliveredAt && (
+                        <div className="mt-4 p-3 bg-green-50 rounded-lg text-center">
+                            <p className="text-sm text-green-800">
+                                <span className="font-medium">Delivered on:</span>{' '}
+                                {new Date(order.deliveredAt).toLocaleDateString()}
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
     );
 };
 
-// 💡 NOVA POMOĆNA KOMPONENTA ZA VIZUELIZACIJU STATUSA
+// ORDER STATUS TIMELINE COMPONENT
 const OrderStatusTimeline = ({ currentStatus }) => {
     const statuses = ['Processing', 'Shipped', 'Delivered'];
     
-    // Određuje da li je status prošao, aktivan ili dolazi
-    const getTimelineClasses = (status, index) => {
+    const getTimelineClasses = (status) => {
         const currentIndex = statuses.indexOf(currentStatus);
         const targetIndex = statuses.indexOf(status);
 
         if (targetIndex < currentIndex) {
-            return 'bg-green-500 text-white'; // Prošlo
+            return 'bg-green-500 text-white'; // Completed
         } else if (targetIndex === currentIndex) {
-            return 'bg-indigo-600 text-white animate-pulse'; // Trenutni
+            return 'bg-indigo-600 text-white animate-pulse'; // Current
         } else {
-            return 'bg-gray-300 text-gray-500'; // Sledeći
+            return 'bg-gray-300 text-gray-500'; // Upcoming
         }
     };
 
     return (
         <div className="flex justify-between items-center relative py-4">
-            {/* Linija za povezivanje */}
+            {/* Connection Line */}
             <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 z-0 mx-8"></div>
 
             {statuses.map((status, index) => (
                 <div key={status} className="flex flex-col items-center z-10 w-1/3">
                     <div 
                         className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-500 
-                            ${getTimelineClasses(status, index)}`}
+                            ${getTimelineClasses(status)}`}
                     >
                         {index + 1}
                     </div>
