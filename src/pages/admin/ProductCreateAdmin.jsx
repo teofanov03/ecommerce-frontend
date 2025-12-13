@@ -7,7 +7,7 @@ import ProductForm from '../../components/ProductForm.jsx'; // ✅ Uvozimo novu 
 
 const ProductCreateAdmin = () => {
     const navigate = useNavigate();
-    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL'; 
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
     const handleCreateSubmit = async (formData) => {
         try {

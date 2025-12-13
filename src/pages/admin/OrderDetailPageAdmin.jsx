@@ -8,7 +8,7 @@ import axios from 'axios';
 const OrderDetailPageAdmin = () => {
     const { id } = useParams(); 
     const navigate = useNavigate();
-    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL'; 
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
     
     // Dohvaćanje specifične narudžbine
     const { data: fetchResponse, loading, error, refetch } = useFetch(`${BASE_URL}/orders/${id}`); 

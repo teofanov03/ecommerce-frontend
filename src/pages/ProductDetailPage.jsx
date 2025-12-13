@@ -7,7 +7,7 @@ import { useCartContext } from '../context/CartContext.jsx';
 const ProductDetailPage = () => {
     // 1. Dohvatamo ID proizvoda iz URL-a
     const { id } = useParams(); 
-    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL'; 
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
     // 2. Dohvatamo specifičan proizvod (koristeći novi API endpoint)
     const { data: fetchResponse, loading, error } = useFetch(`${BASE_URL}/products/${id}`);

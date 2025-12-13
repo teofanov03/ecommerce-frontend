@@ -6,7 +6,7 @@ import axios from 'axios'; // Dodajemo axios za PUT zahtev
 import { Link } from 'react-router-dom';
 
 const OrderListAdmin = () => {
-    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL'; 
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
     
     // Fetch all orders, dodajemo refetch za osvežavanje
     const { data: fetchResponse, loading, error, refetch } = useFetch(`${BASE_URL}/orders`); 
