@@ -73,7 +73,7 @@ const OrderHistory = () => {
                                 
                                 <div className="text-sm text-gray-600 space-y-1 mb-4">
                                     <p>Date: <span className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</span></p>
-                                    <p>Total: <span className="font-bold text-gray-800">{order.totalPrice.toFixed(2)} €</span></p>
+                                    <p>Total: <span className="font-bold text-gray-800">{order.totalPrice.toFixed(2)} $</span></p>
                                 </div>
                 
                                 {/* 2. PRIKAZ STAVKI NARUDŽBINE (SA SLIKOM) */}
