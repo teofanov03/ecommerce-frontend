@@ -5,7 +5,7 @@ import axiosInstance from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
-const BASE_URL = 'import.meta.env.VITE_API_BASE_URL/auth'; 
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 
 const getInitialAuthState = () => {
     const token = localStorage.getItem('authToken');

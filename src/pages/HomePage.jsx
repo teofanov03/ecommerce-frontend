@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 // Hardkodovana lista kategorija
 const categories = ['All', 'Electronics', 'Clothing', "Home & Living", 'Accessories',"Footwear","Sports","Books","Beauty","Toys"];
-const BASE_URL = 'import.meta.env.VITE_API_BASE_URL/products';
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/products`;
 
 const HomePage = () => {
     
