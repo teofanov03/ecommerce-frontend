@@ -1,3 +1,4 @@
+/* eslint-disable no-irregular-whitespace */
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../api/axios'; 
 import { toast } from 'react-hot-toast';
@@ -94,7 +95,7 @@ const OrderHistory = () => {
                                                     <img 
                                                         src={imageUrl} 
                                                         alt={productName} 
-                                                        className="w-12 h-12 object-cover rounded shadow-md flex-shrink-0" 
+                                                        className="w-12 h-12 object-cover rounded shadow-md shrink-0" 
                                                     />
                                                 )}
                                                 

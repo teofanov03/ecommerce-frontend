@@ -1,4 +1,4 @@
-/* eslint-disable no-irregular-whitespace */
+ 
 // src/pages/admin/OrderListAdmin.jsx - AŽURIRANA VERZIJA (EN)
 import React from 'react';
 import useFetch from '../../hooks/useFetch';
@@ -6,7 +6,7 @@ import axios from 'axios'; // Dodajemo axios za PUT zahtev
 import { Link } from 'react-router-dom';
 
 const OrderListAdmin = () => {
-    const BASE_URL = 'http://localhost:5000/api/v1'; 
+    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL'; 
     
     // Fetch all orders, dodajemo refetch za osvežavanje
     const { data: fetchResponse, loading, error, refetch } = useFetch(`${BASE_URL}/orders`); 
@@ -42,7 +42,7 @@ const OrderListAdmin = () => {
     const handleDelete = async (orderId) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
         try {
-            await axios.delete(`http://localhost:5000/api/v1/orders/${orderId}`);
+            await axios.delete(`import.meta.env.VITE_API_BASE_URL/orders/${orderId}`);
             alert("Order deleted successfully!");
             // Opciono: Ažurirajte listu narudžbina (ponovnim fetchovanjem)
             refetch();
@@ -133,14 +133,14 @@ const OrderListAdmin = () => {
                                         <button
                                             onClick={() => handleUpdateStatus(order._id, order.orderStatus)}
                                             // Konzistentan blok stil
-                                            className="bg-indigo-500 text-white py-1 px-2 rounded-lg hover:bg-indigo-600 transition font-medium text-xs w-full max-w-[100px]"
+                                            className="bg-indigo-500 text-white py-1 px-2 rounded-lg hover:bg-indigo-600 transition font-medium text-xs w-full max-w-25"
                                         >
                                             Next Status
                                         </button>
                                     )}
                                     
                                     {/* 2. Dugme za Detalje (Details) */}
-                                    <Link to={`/admin/orders/${order._id}`} className="w-full max-w-[100px]">
+                                    <Link to={`/admin/orders/${order._id}`} className="w-full max-w-25">
                                         <button 
                                             // Svetliji neutralni stil
                                             className="bg-gray-200 text-gray-800 py-1 px-2 rounded-lg hover:bg-gray-300 transition font-medium text-xs w-full"
@@ -153,7 +153,7 @@ const OrderListAdmin = () => {
                                     <button 
                                         onClick={() => handleDelete(order._id)}
                                         // Stil crvenog bloka
-                                        className="bg-red-500 text-white py-1 px-2 rounded-lg hover:bg-red-600 transition font-medium text-xs w-full max-w-[100px]"
+                                        className="bg-red-500 text-white py-1 px-2 rounded-lg hover:bg-red-600 transition font-medium text-xs w-full max-w-25"
                                     >
                                         Delete
                                     </button>

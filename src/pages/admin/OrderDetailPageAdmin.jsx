@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // src/pages/admin/OrderDetailPageAdmin.jsx - KONAČNA VERZIJA SA SLIKOM PROIZVODA
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -7,7 +8,7 @@ import axios from 'axios';
 const OrderDetailPageAdmin = () => {
     const { id } = useParams(); 
     const navigate = useNavigate();
-    const BASE_URL = 'http://localhost:5000/api/v1'; 
+    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL'; 
     
     // Dohvaćanje specifične narudžbine
     const { data: fetchResponse, loading, error, refetch } = useFetch(`${BASE_URL}/orders/${id}`); 

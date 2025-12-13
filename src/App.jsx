@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // src/App.jsx - FINALNA VERZIJA SA AUTH CONTEXT INTEGRACIJOM
 
 import React from 'react';

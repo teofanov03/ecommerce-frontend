@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const ProductEditAdmin = () => {
     const { id } = useParams(); // Retrieves ID from the URL
-    const BASE_URL = 'http://localhost:5000/api/v1/products';
+    const BASE_URL = 'import.meta.env.VITE_API_BASE_URL/products';
     const navigate = useNavigate();
 
     // Fetches existing product data
