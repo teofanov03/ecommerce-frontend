@@ -44,25 +44,57 @@ const CartPage = () => {
                 {/* 1. Cart Items List */}
                 <div className="lg:w-3/4 space-y-6">
                     {cartItems.map((item) => (
-                        <div key={item._id} className="flex items-center p-4 bg-white shadow-lg rounded-lg border border-gray-100">
+                        // ✅ IZMENA: Dodajte flex-wrap na malim ekranima (sm:flex-nowrap)
+                        <div 
+                            key={item._id} 
+                            className="flex flex-wrap sm:flex-nowrap items-center p-4 bg-white shadow-lg rounded-lg border border-gray-100"
+                        >
                             
                             <img 
-                               src={item.image} 
+                                src={item.image} 
                                 alt={item.name}
-                                className="w-20 h-20 object-cover rounded-md mr-4"
+                                className="w-20 h-20 object-cover rounded-md mr-4 mb-2 sm:mb-0 shrink-0" // Sprečava smanjivanje slike
                             />
-                            <div className="grow">
-                                <h3 className="text-xl font-semibold text-gray-800">{item.name}</h3>
-                                <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                            
+                            {/* 💡 Detalji proizvoda - treba da zauzmu prostor i da se prelamaju ako je potrebno */}
+                            <div className="grow w-full sm:w-auto min-w-0 mb-4 sm:mb-0 sm:mr-6">
+                                <h3 className="text-lg font-semibold text-gray-800 whitespace-normal">{item.name}</h3>
+                                {/* Prikazuje cenu i količinu za mali ekran (ako je sklonjena sa desne strane) */}
+                                <p className="text-gray-600 text-sm sm:hidden mt-1">Price: ${item.price.toFixed(2)}</p>
                             </div>
                             
-                            {/* Quantity Control */}
-                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shadow-sm mr-6">
-                                <button onClick={() => updateQuantity(item._id, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-xl font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed" disabled={item.quantity <= 1}>-</button>
+                            {/* Quantity Control - Stavite ga ispod detalja na malom ekranu */}
+                            {/* ✅ IZMENA: Sada je centriran i zauzima ceo red na mobilnom */}
+                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden shadow-sm mr-6 sm:mr-4 shrink-0 order-3 sm:order-0 w-1/2 sm:w-auto">
+                                <button 
+                                    onClick={() => updateQuantity(item._id, item.quantity - 1)} 
+                                    className="w-8 h-8 flex items-center justify-center text-xl font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed" 
+                                    disabled={item.quantity <= 1}
+                                >
+                                    -
+                                </button>
                                 <span className="font-medium text-lg w-8 text-center">{item.quantity}</span>
-                                <button onClick={() => updateQuantity(item._id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-xl font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition cursor-pointer">+</button>
+                                <button 
+                                    onClick={() => updateQuantity(item._id, item.quantity + 1)} 
+                                    className="w-8 h-8 flex items-center justify-center text-xl font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition cursor-pointer"
+                                >
+                                    +
+                                </button>
                             </div>
-                            <button onClick={() => removeFromCart(item._id)} className="text-red-600 hover:text-white hover:bg-red-600 font-bold py-1 px-3 rounded-lg transition duration-150 border border-red-600 cursor-pointer">Remove</button>
+
+                            {/* Cena (prikazana samo na većim ekranima) */}
+                            <div className="hidden sm:block text-right font-bold text-lg text-gray-800 shrink-0 mr-4">
+                                ${(item.price * item.quantity).toFixed(2)}
+                            </div>
+                            
+                            {/* Remove Button - Stavite ga u novi red na mobilnom i poravnajte desno/puno širinom */}
+                            {/* ✅ IZMENA: Order je 4 da bi pao u sledeći red u flex-wrap modu, i zauzima 1/2 širine. */}
+                            <button 
+                                onClick={() => removeFromCart(item._id)} 
+                                className="text-red-600 hover:text-white hover:bg-red-600 font-bold py-1 px-3 rounded-lg transition duration-150 border border-red-600 cursor-pointer shrink-0 order-4 sm:order-0 w-1/2 sm:w-auto"
+                            >
+                                Remove
+                            </button>
                         </div>
                     ))}
                 </div>
