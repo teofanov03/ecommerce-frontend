@@ -32,7 +32,8 @@ const HomePage = () => {
         
         // Filter po Kategoriji
         if (selectedCategory !== 'All') {
-            params.push(`category=${selectedCategory}`); 
+            const encodedCategory = encodeURIComponent(selectedCategory);
+            params.push(`category=${encodedCategory}`);
         }
 
         // Filter po Ceni (Min i Max)
