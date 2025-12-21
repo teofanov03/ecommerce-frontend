@@ -1,4 +1,3 @@
-// src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { AuthContextType, User } from '../types/auth';
 import axiosInstance from '../api/axios';
@@ -7,14 +6,16 @@ import { toast } from 'react-hot-toast';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // Inicijalizacija iz localStorage da se ne izloguje na F5
     const [user, setUser] = useState<User | null>(() => {
         const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : null;
+        try {
+            return savedUser ? JSON.parse(savedUser) : null;
+        } catch {
+            return null;
+        }
     });
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
-    // Kad god se token promeni, ažuriraj axios zaglavlje
     useEffect(() => {
         if (token) {
             axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -36,28 +37,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (email: string, password: string) => {
         try {
             const res = await axiosInstance.post('/auth/login', { email, password });
-            setUser(res.data.user);
-            setToken(res.data.token);
-            toast.success('Welcome back!');
-            return true;
+            
+            // Provera: Da li backend šalje podatke u res.data.user ili samo res.data?
+            const userData = res.data.user || res.data;
+            const userToken = res.data.token;
+
+            if (userToken) {
+                // Prvo postavljamo token da bi axios bio spreman
+                setToken(userToken);
+                // Zatim postavljamo user-a da bi trigerovali re-render
+                setUser(userData);
+                
+                toast.success('Welcome back!');
+                return true;
+            }
+            return false;
         } catch (err: any) {
+            console.error("Login Error Details:", err.response?.data);
             toast.error(err.response?.data?.message || 'Login failed');
             return false;
         }
     };
 
     const logout = () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
         setUser(null);
         setToken(null);
-        localStorage.clear();
         toast.success('Logged out successfully');
     };
 
     const register = async (data: { name: string; email: string; password: string }) => {
         try {
             const res = await axiosInstance.post('/auth/register', data);
-            setUser(res.data.user);
-            setToken(res.data.token);
+            const userData = res.data.user || res.data;
+            const userToken = res.data.token;
+
+            setToken(userToken);
+            setUser(userData);
+            
             toast.success('Account created!');
             return true;
         } catch (err: any) {
@@ -71,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             value={{
                 user,
                 token,
-                isAuthenticated: !!user,
+                isAuthenticated: !!user && !!token, // Proveravamo oba
                 isAdmin: user?.role === 'admin',
                 login,
                 logout,
