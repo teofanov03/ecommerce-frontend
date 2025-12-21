@@ -29,6 +29,8 @@ import { Toaster } from 'react-hot-toast';
 
 const App: React.FC = () => {
     const { isAuthenticated, logout, user } = useAuthContext();
+    console.log("App.tsx - Is Authenticated:", isAuthenticated);
+    console.log("App.tsx - User:", user);
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     
     const toggleMenu = () => setIsMenuOpen(prev => !prev);
