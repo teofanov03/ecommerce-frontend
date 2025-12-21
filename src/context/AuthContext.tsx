@@ -34,25 +34,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [user]);
 
-    const login = async (email: string, password: string) => {
+   const login = async (email: string, password: string) => {
     try {
         const res = await axiosInstance.post('/auth/login', { email, password });
         
-        // OVA KONZOLA ĆE NAM REĆI SVE:
-        console.log("ŠTA STIŽE SA BACKENDA:", res.data);
+        // Backend struktura: res.data je { success: true, data: { name, role, token, ... } }
+        const responseData = res.data.data; 
 
-        // Automatska detekcija formata
-        const userData = res.data.user || res.data; 
-        const userToken = res.data.token;
+        if (responseData && responseData.token) {
+            // 1. Postavljamo token (da bi Axios dobio Authorization header)
+            setToken(responseData.token);
+            
+            // 2. Postavljamo korisnika (ovo menja isAuthenticated u true)
+            setUser({
+                _id: responseData._id,
+                name: responseData.name,
+                email: responseData.email,
+                role: responseData.role
+            });
 
-        if (userToken) {
-            setToken(userToken);
-            setUser(userData);
+            toast.success('Welcome back!');
             return true;
+        } else {
+            console.error("Token nije pronađen u response.data.data");
+            return false;
         }
-        return false;
     } catch (err: any) {
-        console.error("Greška pri loginu:", err);
+        console.error("Login error:", err.response?.data || err.message);
+        toast.error(err.response?.data?.message || 'Login failed');
         return false;
     }
 };
@@ -66,21 +75,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const register = async (data: { name: string; email: string; password: string }) => {
-        try {
-            const res = await axiosInstance.post('/auth/register', data);
-            const userData = res.data.user || res.data;
-            const userToken = res.data.token;
+    try {
+        const res = await axiosInstance.post('/auth/register', data);
+        
+        // Backend vraća: { success: true, data: { _id, name, email, role, token } }
+        const responseData = res.data.data;
 
-            setToken(userToken);
-            setUser(userData);
+        if (responseData && responseData.token) {
+            // 1. Prvo postavljamo token
+            setToken(responseData.token);
             
-            toast.success('Account created!');
+            // 2. Postavljamo user objekat (bez tokena unutar njega, da bude čistije)
+            const { token, ...userWithoutToken } = responseData;
+            setUser(userWithoutToken);
+            
+            toast.success('Account created successfully!');
             return true;
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Registration failed');
+        } else {
+            console.error("Registration success, but no token received");
             return false;
         }
-    };
+    } catch (err: any) {
+        console.error("Registration error:", err.response?.data || err.message);
+        toast.error(err.response?.data?.message || 'Registration failed');
+        return false;
+    }
+};
 
     return (
         <AuthContext.Provider
