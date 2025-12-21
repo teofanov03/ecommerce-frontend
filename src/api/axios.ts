@@ -1,18 +1,20 @@
-// src/api/axios.js
-import axios from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     withCredentials: true,
 });
 
-// Add token from localStorage to every request
+// Dodavanje tokena iz localStorage-a na svaki zahtev
 axiosInstance.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
+    (config: InternalAxiosRequestConfig) => {
+        // Koristimo 'token' jer si ga tako nazvao u AuthContext-u
+        const token = localStorage.getItem('token');
+        
+        if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
         return config;
     },
     (error) => {
