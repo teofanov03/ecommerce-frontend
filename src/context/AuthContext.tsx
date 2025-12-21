@@ -35,29 +35,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [user]);
 
     const login = async (email: string, password: string) => {
-        try {
-            const res = await axiosInstance.post('/auth/login', { email, password });
-            
-            // Provera: Da li backend šalje podatke u res.data.user ili samo res.data?
-            const userData = res.data.user || res.data;
-            const userToken = res.data.token;
+    try {
+        const res = await axiosInstance.post('/auth/login', { email, password });
+        
+        // OVA KONZOLA ĆE NAM REĆI SVE:
+        console.log("ŠTA STIŽE SA BACKENDA:", res.data);
 
-            if (userToken) {
-                // Prvo postavljamo token da bi axios bio spreman
-                setToken(userToken);
-                // Zatim postavljamo user-a da bi trigerovali re-render
-                setUser(userData);
-                
-                toast.success('Welcome back!');
-                return true;
-            }
-            return false;
-        } catch (err: any) {
-            console.error("Login Error Details:", err.response?.data);
-            toast.error(err.response?.data?.message || 'Login failed');
-            return false;
+        // Automatska detekcija formata
+        const userData = res.data.user || res.data; 
+        const userToken = res.data.token;
+
+        if (userToken) {
+            setToken(userToken);
+            setUser(userData);
+            return true;
         }
-    };
+        return false;
+    } catch (err: any) {
+        console.error("Greška pri loginu:", err);
+        return false;
+    }
+};
 
     const logout = () => {
         localStorage.removeItem('user');
