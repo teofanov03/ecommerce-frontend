@@ -1,4 +1,4 @@
-// src/pages/AboutUsPage.jsx
+// src/pages/AboutUsPage.tsx
 
 import React from 'react';
 

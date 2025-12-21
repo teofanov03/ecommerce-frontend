@@ -1,46 +1,58 @@
-// src/components/ProductForm.jsx - JEDINSTVENA, AŽURIRANA FORMA
-import React, { useState, useEffect } from 'react';
-import fileToBase64 from '../utils/fileToBase64'; // Uvezite Base64 funkciju
+// src/components/ProductForm.tsx
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import fileToBase64 from '../utils/fileToBase64';
+import { Product } from '../types/Product';
 
-const categories = ['Electronics', 'Clothing', "Home & Living", 'Accessories',"Footwear","Sports","Books","Beauty","Toys"];
+const categories = [
+    'Electronics', 'Clothing', "Home & Living", 'Accessories', 
+    "Footwear", "Sports", "Books", "Beauty", "Toys"
+];
 
-// Prima onSubmit i initialData
-const ProductForm = ({ onSubmit, initialData = {} }) => {
-    // Stanje inicijalizujemo na osnovu initialData (za Edit) ili na prazne vrednosti (za Create)
-    const [formData, setFormData] = useState({
+// Tip za podatke u formi (slično kao Product, ali price i stock mogu biti stringovi dok se kucaju)
+interface FormDataState {
+    name: string;
+    description: string;
+    price: string | number;
+    category: string;
+    stock: string | number;
+    image: string;
+}
+
+interface ProductFormProps {
+    onSubmit: (formData: any) => Promise<void>;
+    initialData?: Partial<Product>; // Partial jer u Create modu nemamo sva polja
+}
+
+const ProductForm: React.FC<ProductFormProps> = ({ onSubmit, initialData = {} }) => {
+    const [formData, setFormData] = useState<FormDataState>({
         name: initialData.name || '',
         description: initialData.description || '',
-        price: initialData.price || '', // Ostavljamo prazan string da bi input polje bilo prazno u CREATE modu
+        price: initialData.price || '', 
         category: initialData.category || 'Electronics',
-        stock: initialData.stock || '', // Ostavljamo prazan string
-        image: initialData.image || '', // Base64 string ili URL
+        stock: initialData.stock || '', 
+        image: initialData.image || '', 
     });
     
-    // Stanje za prikaz slike: koristimo postojeću sliku ako postoji
-    const [imagePreview, setImagePreview] = useState(initialData.image || null); 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(initialData.image || null); 
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-    // Sinhronizacija (Potrebno samo ako se initialData menja nakon inicijalnog renderovanja, ali je dobra praksa)
     useEffect(() => {
         if (initialData && Object.keys(initialData).length > 0) {
             setFormData({
                 name: initialData.name || '',
                 description: initialData.description || '',
-                price: initialData.price || '',
+                price: initialData.price ?? '',
                 category: initialData.category || 'Electronics',
-                stock: initialData.stock || '',
+                stock: initialData.stock ?? '',
                 image: initialData.image || '',
             });
             setImagePreview(initialData.image || null);
         }
     }, [initialData]);
 
-    // ------------------------------------------------------------------------
-    // RUKOVANJE SLIKOM: Ažurira state i preview sa Base64 (Preuzeto iz ProductCreateAdmin.jsx)
-    // ------------------------------------------------------------------------
-    const handleFileChange = async (e) => {
-        const file = e.target.files[0];
+    const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (file) {
             try {
                 const base64String = await fileToBase64(file);
@@ -53,22 +65,16 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
         }
     };
 
-    // ------------------------------------------------------------------------
-    // OPŠTI HANDLER ZA PROMENU INPUTA
-    // ------------------------------------------------------------------------
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // ------------------------------------------------------------------------
-    // SUBMIT RUKOVATELJ
-    // ------------------------------------------------------------------------
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
-        // Dodatna Validacija
         if (!formData.name || !formData.description || !formData.price || !formData.stock || !formData.image) {
             setError("Please fill out all required fields and upload an image.");
             setLoading(false);
@@ -77,23 +83,21 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
 
         try {
             await onSubmit(formData); 
-        } catch (err) {
+        } catch (err: any) {
             setError(err.message || 'An unexpected error occurred during submit.');
         } finally {
             setLoading(false);
         }
     };
 
-    const buttonText = initialData && initialData._id ? 'Update Product' : 'Create Product';
-    const formTitle = initialData && initialData._id ? 'Edit Product' : 'Create New Product';
+    const buttonText = initialData && (initialData as any)._id ? 'Update Product' : 'Create Product';
+    const formTitle = initialData && (initialData as any)._id ? 'Edit Product' : 'Create New Product';
 
     return (
         <div className="bg-white p-6 shadow-xl rounded-lg">
             <h1 className="text-3xl font-bold text-gray-800 mb-6">{formTitle}</h1>
             
             <form onSubmit={handleSubmit}>
-                
-                {/* Naziv Proizvoda */}
                 <div className="mb-4">
                     <label className="block text-gray-700 font-medium mb-2" htmlFor="name">
                         Product Name
@@ -109,7 +113,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                     />
                 </div>
                 
-                {/* Opis (preuzet stil iz ProductCreateAdmin.jsx) */}
                 <div className="mb-4">
                     <label className="block text-gray-700 font-medium mb-2" htmlFor="description">
                         Description
@@ -119,13 +122,12 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
-                        rows="4"
+                        rows={4}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                         required
                     ></textarea>
                 </div>
                 
-                {/* CENA, KATEGORIJA, STOCK (preuzet stil iz ProductCreateAdmin.jsx) */}
                 <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="col-span-1">
                         <label className="block text-gray-700 font-medium mb-2" htmlFor="price">Price ($)</label>
@@ -145,7 +147,6 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                     </div>
                 </div>
                 
-                {/* FILE INPUT I PREVIEW (preuzet stil iz ProductCreateAdmin.jsx) */}
                 <div className="mb-6">
                     <label className="block text-gray-700 font-medium mb-2" htmlFor="imageUpload">
                         Product Image
@@ -155,27 +156,22 @@ const ProductForm = ({ onSubmit, initialData = {} }) => {
                         id="imageUpload"
                         accept="image/*"
                         onChange={handleFileChange}
-                        // U Edit modu, polje za fajl nije obavezno. U Create modu jeste (zbog validacije u handleSubmit)
                         className="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                     />
                     
-                    {/* Image Preview */}
                     {imagePreview && (
                         <div className="mt-4 p-2 border border-gray-200 rounded-lg inline-block">
-                            {/* Slika se prikazuje bez obzira da li je Base64 ili URL */}
                             <img src={imagePreview} alt="Preview" className="w-32 h-32 object-cover rounded-md" />
                         </div>
                     )}
                 </div>
                 
-                {/* Greške */}
                 {error && (
                     <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg font-medium">
                         Error: {error}
                     </div>
                 )}
 
-                {/* Dugme za Slanje */}
                 <button
                     type="submit"
                     className={`w-full py-3 px-4 rounded-lg text-white font-bold transition duration-150 cursor-pointer ${

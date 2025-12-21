@@ -3,20 +3,12 @@
 
 import { useCartContext } from '../context/CartContext.jsx'; // Uvozimo naš kontekst
 import { Link } from 'react-router-dom';
-type Product = {
-  _id: string;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-  description: string;
-  stock: number;
-};
-type Props = {
+import { Product } from '../types/Product';
+interface Props { 
   product: Product;
 };
 
-const ProductCard = ({ product }: Props) => {
+const ProductCard: React.FC<Props> = ({ product }) => {
     const { addToCart } = useCartContext(); 
     const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();

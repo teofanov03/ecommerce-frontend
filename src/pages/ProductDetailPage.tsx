@@ -1,16 +1,17 @@
-// src/pages/ProductDetailPage.jsx
+// src/pages/ProductDetailPage.tsx
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
-import { useCartContext } from '../context/CartContext.jsx';
+import { useCartContext } from '../context/CartContext.js';
+import { Product } from '../types/Product.js';
 
 const ProductDetailPage = () => {
     // 1. Dohvatamo ID proizvoda iz URL-a
-    const { id } = useParams(); 
+    const { id } = useParams<{ id: string }>(); 
     const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
     // 2. Dohvatamo specifičan proizvod (koristeći novi API endpoint)
-    const { data: fetchResponse, loading, error } = useFetch(`${BASE_URL}/products/${id}`);
+    const { data: fetchResponse, loading, error } = useFetch<{ data: Product }>(`${BASE_URL}/products/${id}`);
     const { addToCart } = useCartContext(); 
 const product = fetchResponse?.data;
     if (loading) return <div className="pt-20 text-center">Loading details...</div>;

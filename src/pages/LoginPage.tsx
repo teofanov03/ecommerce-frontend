@@ -1,16 +1,16 @@
-// src/pages/LoginPage.jsx - AŽURIRANA VERZIJA (SAMO ESTETIKA)
+// src/pages/LoginPage.tsx - AŽURIRANA VERZIJA (SAMO ESTETIKA)
 import React, { useState, useEffect } from 'react';
 import { useAuthContext } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 // Uklanjamo Link import, jer ga originalni kod nije imao
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
     
     // Retrieves state and login function from Auth context
-    const { isAuthenticated, login } = useAuthContext();
+    const { isAuthenticated, login }: { isAuthenticated: boolean; login: (email: string, password: string) => Promise<boolean> } = useAuthContext();
     const navigate = useNavigate();
 
     // 1. Check if the user is already logged in
@@ -21,7 +21,7 @@ const LoginPage = () => {
     }, [isAuthenticated, navigate]);
 
     // 2. Function to handle form submission
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(''); // Reset error
 

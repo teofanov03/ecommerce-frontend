@@ -1,11 +1,11 @@
-// src/pages/admin/AdminDashboard.jsx
+// src/pages/admin/AdminDashboard.tsx
 
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { FaBoxes, FaClipboardList, FaSignOutAlt } from 'react-icons/fa';
-import { useAuthContext } from '../../context/AuthContext.jsx';
+import { useAuthContext } from '../../context/AuthContext.js';
 
-const AdminDashboard = () => {
+const AdminDashboard: React.FC = () => {
     const { logout, user } = useAuthContext();
 
     return (

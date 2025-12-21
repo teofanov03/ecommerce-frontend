@@ -1,11 +1,11 @@
 /* eslint-disable no-irregular-whitespace */
-// src/pages/HomePage.jsx - KOMPLETAN KOD SA FILTERIMA, SORTIRANJEM I PAGINACIJOM
+// src/pages/HomePage.tsx - KOMPLETAN KOD SA FILTERIMA, SORTIRANJEM I PAGINACIJOM
 
 import React, { useState, useMemo } from 'react';
 import ProductCard from '../components/ProductCard';
 import useFetch from '../hooks/useFetch'; 
 import { Link } from 'react-router-dom';
-
+import type { Product } from '../types/Product';
 // Hardkodovana lista kategorija
 const categories = ['All', 'Electronics', 'Clothing', "Home & Living", 'Accessories',"Footwear","Sports","Books","Beauty","Toys"];
 const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/products`;
@@ -15,13 +15,13 @@ const HomePage = () => {
     // ----------------------------------------------------
     // 1. STANJE (STATE) ZA FILTERE I PAGINACIJU
     // ----------------------------------------------------
-    const [selectedCategory, setSelectedCategory] = useState('All');
-    const [minPrice, setMinPrice] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
-    const [sortBy, setSortBy] = useState('latest');
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
+    const [minPrice, setMinPrice] = useState<string>('');
+    const [maxPrice, setMaxPrice] = useState<string>('');
+    const [sortBy, setSortBy] = useState<string>('latest');
     
     // PAGINACIJA STANJE
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const productsPerPage = 12; // Konstantan broj proizvoda po stranici
     
     // ----------------------------------------------------
@@ -63,17 +63,17 @@ const HomePage = () => {
     // 3. DOHVATANJE PROIZVODA
     // ----------------------------------------------------
     // 💡 useFetch sada vraća ceo odgovor (fetchResponse) koji sadrži podatke o paginaciji
-    const { data: fetchResponse, loading, error } = useFetch(filterQuery);
+    const { data: fetchResponse, loading, error } = useFetch<{ data: Product[]; totalPages: number }>(filterQuery);
     
     // Izdvajanje podataka
-    const products = fetchResponse?.data || [];
-    const totalPages = fetchResponse?.totalPages || 1;
+    const products: Product[] = fetchResponse?.data || [];
+    const totalPages: number = fetchResponse?.totalPages || 1;
     
     // ----------------------------------------------------
     // 4. FUNKCIJE ZA RUKOVANJE
     // ----------------------------------------------------
     
-    const handlePageChange = (page) => {
+    const handlePageChange = (page: number) => {
         if (page > 0 && page <= totalPages) {
             setCurrentPage(page);
             // Skrolovanje na vrh liste proizvoda radi boljeg UX-a
@@ -205,7 +205,7 @@ const HomePage = () => {
                     )}
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 items-stretch">
-                        {products?.map(product => (
+                        {products?.map((product: Product) => (
                            
                             <Link key={product._id} to={`/product/${product._id}`} className="h-full">
                                 <ProductCard product={product} />

@@ -1,10 +1,32 @@
 // src/components/ShippingForm.jsx - LOKALIZOVANA VERZIJA (EN / USD)
-import React, { useState } from 'react';
-import { useCartContext } from '../context/CartContext.jsx';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { useCartContext } from '../context/CartContext';
+import { CartItem } from '../types/Cart';
+interface ShippingInfo {
+  fullName: string;
+  email: string;
+  address: string;
+  city: string;
+  zipCode: string;
+}
 
+interface OrderData {
+  shippingInfo: ShippingInfo;
+  orderItems: {
+    product: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+  totalPrice: number;
+}
+
+interface ShippingFormProps {
+  onCheckout: (data: OrderData) => void;
+}
 const ShippingForm = ({ onCheckout }) => {
     // Stanje forme sa ključevima koji odgovaraju Order modelu (fullName, email, itd.)
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ShippingInfo>({
         fullName: '',
         email: '',
         address: '',
@@ -16,32 +38,31 @@ const ShippingForm = ({ onCheckout }) => {
     // Dohvatamo ukupnu cenu
     const total = parseFloat(getTotalPrice());
 
-    const handleChange = (e) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        
-        // 1. Kreiranje orderData objekta sa ispravnim ključevima iz modela (shippingInfo)
-        const orderData = {
-            // KLJUČNO: Šaljemo formData pod ključem 'shippingInfo' kako model očekuje
-            shippingInfo: formData, 
-            orderItems: cartItems.map(item => ({
-                product: item._id, 
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-            })),
-            totalPrice: total, 
-        };
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-        // 2. Slanje na CartPage (koji će pozvati Backend)
-        onCheckout(orderData);
+    const total = parseFloat(getTotalPrice());
+
+    const orderData: OrderData = {
+        shippingInfo: formData,
+        orderItems: cartItems.map((item: CartItem) => ({
+            product: item._id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+        })),
+        totalPrice: total,
     };
 
+    onCheckout(orderData);
+};
+
     // Funkcija za prevođenje CamelCase polja u User-friendly tekst (Već je na engleskom)
-    const getFieldLabel = (key) => {
+    const getFieldLabel = (key:keyof ShippingInfo) => {
         switch(key) {
             case 'fullName': return 'Full Name';
             case 'email': return 'Email Address';
@@ -53,24 +74,19 @@ const ShippingForm = ({ onCheckout }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-6 bg-white shadow-xl rounded-lg border border-indigo-100">
-            {/* NASLOV (Već je na engleskom) */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2> 
+         <form onSubmit={handleSubmit} className="p-6 bg-white shadow-xl rounded-lg border border-indigo-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2>
             
-            {/* Input polja */}
             {Object.keys(formData).map((key) => (
                 <div key={key} className="mb-4">
-                    <label 
-                        className="block text-sm font-medium text-gray-700"
-                        htmlFor={key}
-                    >
-                        {getFieldLabel(key)}
+                    <label className="block text-sm font-medium text-gray-700" htmlFor={key}>
+                        {getFieldLabel(key as keyof ShippingInfo)}
                     </label>
                     <input
                         type={key === 'email' ? 'email' : 'text'}
                         id={key}
                         name={key}
-                        value={formData[key]}
+                        value={formData[key as keyof ShippingInfo]}
                         onChange={handleChange}
                         required
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -78,13 +94,11 @@ const ShippingForm = ({ onCheckout }) => {
                 </div>
             ))}
 
-            {/* UKUPNA CENA (Već je na engleskom) */}
             <div className="flex justify-between text-lg font-semibold border-t pt-4 mt-6">
                 <span>Order Total:</span>
                 <span className="text-green-600">${total.toFixed(2)}</span>
             </div>
             
-            {/* DUGME ZA SUBMIT (Već je na engleskom) */}
             <button
                 type="submit"
                 className="w-full py-3 mt-4 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition duration-300 cursor-pointer"

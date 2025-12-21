@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Footer = () => {
+const Footer: React.FC = () => {
     return (
         <footer className="bg-gray-800 text-white mt-10 border-t border-indigo-600 relative z-49 ">
             <div className="container mx-auto max-w-7xl px-6 py-10">

@@ -1,22 +1,26 @@
-// src/pages/RegisterPage.jsx
+// src/pages/RegisterPage.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
-
-const RegisterPage = () => {
+interface RegisterFormData {
+    name: string;
+    email: string;
+    password: string;
+}
+const RegisterPage: React.FC = () => {
     const { register } = useAuthContext();
-    const [formData, setFormData] = useState({ 
+    const [formData, setFormData] = useState<RegisterFormData>  ({ 
         name: '', 
         email: '', 
         password: '' 
     });
     const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         

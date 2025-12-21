@@ -1,40 +1,47 @@
-// src/pages/admin/ProductListAdmin.jsx - FIXED VERSION
-
+// src/pages/admin/ProductListAdmin.tsx
 import React, { useState, useMemo } from 'react';
 import useFetch from '../../hooks/useFetch';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { Product } from '../../types/Product';
 
-const ProductListAdmin = () => {
+// Tipiziramo odgovor sa servera koji uključuje niz proizvoda i podatke o paginaciji
+interface ProductsFetchResponse {
+    data: Product[];
+    totalPages: number;
+    currentPage: number;
+}
+
+const ProductListAdmin: React.FC = () => {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
     
     // State for pagination
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const productsPerPage = 10;
     
-    // Creating dynamic URL - FIXED: Added BASE_URL to dependencies
+    // Dinamički URL sa paginacijom
     const filterQuery = useMemo(() => {
         const params = [];
         params.push(`page=${currentPage}`);
         params.push(`limit=${productsPerPage}`);
         
         return `${BASE_URL}/products?${params.join('&')}`;
-    }, [currentPage, productsPerPage, BASE_URL]); // ✅ FIXED: Added BASE_URL
+    }, [currentPage, productsPerPage, BASE_URL]);
 
-    // Fetching data
-    const { data: fetchResponse, loading, error, refetch } = useFetch(filterQuery); 
+    // Fetching data koristeći generički tip za response
+    const { data: fetchResponse, loading, error, refetch } = useFetch<ProductsFetchResponse>(filterQuery); 
     
     const products = fetchResponse?.data || [];
     const totalPages = fetchResponse?.totalPages || 1; 
 
-    // Delete handler
-    const handleDelete = async (id, name) => {
+    // Delete handler sa tipiziranim parametrima
+    const handleDelete = async (id: string, name: string) => {
         if (window.confirm(`Are you sure you want to delete the product: ${name}?`)) {
             try {
                 await axios.delete(`${BASE_URL}/products/${id}`); 
                 alert(`Product ${name} successfully deleted.`);
                 refetch();
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error during deletion:', err);
                 alert('Deletion failed. Check the console.');
             }
@@ -42,27 +49,31 @@ const ProductListAdmin = () => {
     };
     
     // Pagination handler
-    const handlePageChange = (page) => {
+    const handlePageChange = (page: number) => {
         if (page > 0 && page <= totalPages) {
             setCurrentPage(page);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
-    // Loading state - show button even while loading
+    // Prikaz headera (dupliran kod u loading/error stanjima radi tvog originalnog dizajna)
+    const renderHeader = () => (
+        <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-gray-800">Product Management</h2>
+            <Link to="/admin/products/new">
+                <button 
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer"
+                >
+                    + Add New Product
+                </button>
+            </Link>
+        </div>
+    );
+
     if (loading && products.length === 0) {
         return (
             <div>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800">Product Management</h2>
-                    <Link to="/admin/products/new">
-                        <button 
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer"
-                        >
-                            + Add New Product
-                        </button>
-                    </Link>
-                </div>
+                {renderHeader()}
                 <div className="text-center py-8">Loading products...</div>
             </div>
         );
@@ -71,16 +82,7 @@ const ProductListAdmin = () => {
     if (error) {
         return (
             <div>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold text-gray-800">Product Management</h2>
-                    <Link to="/admin/products/new">
-                        <button 
-                            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer"
-                        >
-                            + Add New Product
-                        </button>
-                    </Link>
-                </div>
+                {renderHeader()}
                 <div className="text-center py-8 text-red-500">Error: {error.message}</div>
             </div>
         );
@@ -88,26 +90,14 @@ const ProductListAdmin = () => {
 
     return (
         <div>
-            {/* Header with Add Button - ALWAYS VISIBLE */}
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-gray-800">Product Management</h2>
-                <Link to="/admin/products/new">
-                    <button 
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer"
-                    >
-                        + Add New Product
-                    </button>
-                </Link>
-            </div>
+            {renderHeader()}
             
-            {/* No products message */}
             {products.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                     No products found. Click "Add New Product" to create one.
                 </div>
             ) : (
                 <>
-                    {/* Product Table */}
                     <div className="bg-white shadow-md rounded-lg overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">

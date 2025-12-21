@@ -1,14 +1,24 @@
-// src/pages/CartPage.jsx
+// src/pages/CartPage.tsx
 import React from 'react';
-import { useCartContext } from '../context/CartContext.jsx';
+import { useCartContext } from '../context/CartContext.js';
 import ShippingForm from '../components/ShippingForm.jsx';
-import axiosInstance from '../api/axios'; // ✅ Use your configured instance!
-
+import axiosInstance from '../api/axios.js'; // ✅ Use your configured instance!
+import { CartItem } from '../types/Cart.js';
+interface OrderData {
+  name: string;
+  email: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  paymentMethod: string;
+  cartItems: CartItem[];
+}
 const CartPage = () => {
     const { cartItems, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCartContext(); 
     const totalPrice = getTotalPrice(); 
 
-    const handleCheckout = async (orderData) => {
+    const handleCheckout = async (orderData : OrderData) => {
         try {
             console.log("Sending order:", orderData);
             
@@ -101,7 +111,7 @@ const CartPage = () => {
 
                 {/* 2. Side Panel - Shipping Form */}
                 <div className="lg:w-1/4 mt-8 lg:mt-0 sticky top-24 h-fit">
-                    <ShippingForm onCheckout={handleCheckout} total={totalPrice} /> 
+                    <ShippingForm onCheckout={handleCheckout}  /> 
                 </div>
             </div>
         </div>
