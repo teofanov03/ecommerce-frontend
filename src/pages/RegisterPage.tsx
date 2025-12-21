@@ -1,6 +1,7 @@
 // src/pages/RegisterPage.tsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
 interface RegisterFormData {
     name: string;
@@ -9,6 +10,7 @@ interface RegisterFormData {
 }
 const RegisterPage: React.FC = () => {
     const { register } = useAuthContext();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<RegisterFormData>  ({ 
         name: '', 
         email: '', 
@@ -25,8 +27,10 @@ const RegisterPage: React.FC = () => {
         setLoading(true);
         
         // Register function now handles navigation internally
-        await register(formData);
-        
+        const success = await register(formData);
+        if (success) {
+            navigate('/'); // <-- OVO šalje korisnika na Home nakon uspeha
+        }
         setLoading(false);
     };
 

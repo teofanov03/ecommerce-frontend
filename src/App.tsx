@@ -1,6 +1,6 @@
 // src/App.tsx
 import React, { useState } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link,useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import CartPage from './pages/CartPage';
 import CartIcon from './components/CartIcon'; 
@@ -28,6 +28,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import { Toaster } from 'react-hot-toast';
 
 const App: React.FC = () => {
+    const navigate = useNavigate();
     const { isAuthenticated, logout, user } = useAuthContext();
     console.log("App.tsx - Is Authenticated:", isAuthenticated);
     console.log("App.tsx - User:", user);
@@ -69,7 +70,10 @@ const App: React.FC = () => {
                                     
                                     <button 
                                         type="button"
-                                        onClick={() => logout()}
+                                       onClick={() => {
+                                            logout();        // Prvo obriši podatke
+                                            navigate('/login'); // Zatim ga "izbaci" na login stranicu
+                                        }}
                                         className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium text-sm cursor-pointer hidden sm:block"
                                     >
                                         Logout
