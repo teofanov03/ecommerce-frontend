@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios, { AxiosError } from 'axios';
+import axiosInstance from '../api/axios';
+import { AxiosError } from 'axios';
 
 interface UseFetchReturn<T> {
   data: T | null;
@@ -17,7 +18,7 @@ function useFetch<T>(url: string, initialData: T | null = null): UseFetchReturn<
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<T>(url); // <T> tipizuje response.data
+      const response = await axiosInstance.get<T>(url); // <T> tipizuje response.data
       setData(response.data);
     } catch (err) {
       const axiosError = err as AxiosError;

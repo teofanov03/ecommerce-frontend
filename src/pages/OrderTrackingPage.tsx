@@ -1,6 +1,6 @@
 // src/pages/OrderTrackingPage.tsx
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../api/axios';
 import { Order } from '../types/Order';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -13,7 +13,7 @@ const OrderTrackingPage: React.FC = () => {
 
   const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    const cleanId = orderId.trim();
     if (!orderId.trim()) {
       setError('Please enter a valid Order ID.');
       return;
@@ -24,7 +24,7 @@ const OrderTrackingPage: React.FC = () => {
     setOrder(null);
 
     try {
-      const response = await axios.get<{ data: Order }>(`${BASE_URL}/orders/track/${orderId}`);
+      const response = await axiosInstance.get<{ data: Order }>(`/orders/track/${cleanId}`);
       console.log("Tracking Response:", response.data);
       if (response.data?.data) {
         setOrder(response.data.data);

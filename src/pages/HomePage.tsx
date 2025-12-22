@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../types/Product';
 // Hardkodovana lista kategorija
 const categories = ['All', 'Electronics', 'Clothing', "Home & Living", 'Accessories',"Footwear","Sports","Books","Beauty","Toys"];
-const BASE_URL = '/products';
+const BASE_URL = '/products'; // Relativna putanja, axiosInstance će dodati bazni URL
 
 const HomePage = () => {
     
