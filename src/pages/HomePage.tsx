@@ -115,7 +115,7 @@ const HomePage = () => {
                                         setSelectedCategory(cat);
                                         setCurrentPage(1); // Resetuj stranicu pri promeni filtera
                                     }}
-                                    className={`w-full text-left py-2 px-3 rounded-lg transition duration-150 text-sm font-medium ${
+                                    className={`w-full text-left py-2 px-3 rounded-lg transition duration-150 text-sm font-medium cursor-pointer ${
                                         selectedCategory === cat 
                                             ? 'bg-indigo-600 text-white shadow-md' 
                                             : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
@@ -186,7 +186,7 @@ const HomePage = () => {
                     {/* D. DUGME ZA RESETOVANJE FILTERA */}
                     <button
                         onClick={handleResetFilters}
-                        className="w-full py-2 px-4 rounded-lg text-sm font-bold bg-red-100 text-red-600 hover:bg-red-200 transition"
+                        className="w-full py-2 px-4 rounded-lg text-sm font-bold bg-red-100 text-red-600 hover:bg-red-200 transition cursor-pointer"
                     >
                         Reset All
                     </button>

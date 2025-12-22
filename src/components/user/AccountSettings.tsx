@@ -119,7 +119,7 @@ const AccountSettings: React.FC = () => {
         <button
           type="submit"
           disabled={detailsLoading}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer disabled:opacity-50"
         >
           {detailsLoading ? 'Updating...' : 'Save Details'}
         </button>
@@ -154,7 +154,7 @@ const AccountSettings: React.FC = () => {
         <button
           type="submit"
           disabled={passwordLoading}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition cursor-pointer disabled:opacity-50"
         >
           {passwordLoading ? 'Changing...' : 'Change Password'}
         </button>

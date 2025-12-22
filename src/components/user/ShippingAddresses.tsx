@@ -94,7 +94,7 @@ const ShippingAddresses: React.FC = () => {
       {!isAdding && (
         <button 
           onClick={() => setIsAdding(true)}
-          className="mb-6 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          className="mb-6 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition cursor-pointer"
         >
           + Add New Address
         </button>
@@ -161,7 +161,7 @@ const ShippingAddresses: React.FC = () => {
               <div className="flex space-x-2">
                 <button 
                   onClick={() => handleDeleteAddress(addr._id)}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  className="px-3 py-1.5 border border-red-200 bg-red-50 text-red-600 rounded-md hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors duration-200 text-xs font-bold cursor-pointer shadow-sm"
                 >
                   Delete
                 </button>
