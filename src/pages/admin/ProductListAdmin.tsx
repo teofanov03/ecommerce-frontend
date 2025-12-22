@@ -1,11 +1,10 @@
 // src/pages/admin/ProductListAdmin.tsx
 import React, { useState, useMemo } from 'react';
 import useFetch from '../../hooks/useFetch';
-import axios from 'axios';
+import axiosInstance from '../../api/axios'; // Dodajemo naš axios sa tokenom
 import { Link } from 'react-router-dom';
 import { Product } from '../../types/Product';
 
-// Tipiziramo odgovor sa servera koji uključuje niz proizvoda i podatke o paginaciji
 interface ProductsFetchResponse {
     data: Product[];
     totalPages: number;
@@ -13,32 +12,33 @@ interface ProductsFetchResponse {
 }
 
 const ProductListAdmin: React.FC = () => {
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
-    
-    // State for pagination
+    // 1. Uklonili smo BASE_URL jer axiosInstance to već ima
     const [currentPage, setCurrentPage] = useState<number>(1);
     const productsPerPage = 10;
     
-    // Dinamički URL sa paginacijom
     const filterQuery = useMemo(() => {
         const params = [];
         params.push(`page=${currentPage}`);
         params.push(`limit=${productsPerPage}`);
         
-        return `${BASE_URL}/products?${params.join('&')}`;
-    }, [currentPage, productsPerPage, BASE_URL]);
+        // Putanja je sada relativna u odnosu na axiosInstance
+        return `/products?${params.join('&')}`;
+    }, [currentPage, productsPerPage]);
 
-    // Fetching data koristeći generički tip za response
+    // OBAVEZNO: Ovde takođe treba paziti na useFetch. 
+    // Ako useFetch unutra koristi običan fetch/axios bez tokena, 
+    // dobijaćeš 401 kad backend bude zaštićen. 
+    // Za sada ostavljamo ovako dok ne vidimo kako se useFetch ponaša.
     const { data: fetchResponse, loading, error, refetch } = useFetch<ProductsFetchResponse>(filterQuery); 
     
     const products = fetchResponse?.data || [];
     const totalPages = fetchResponse?.totalPages || 1; 
 
-    // Delete handler sa tipiziranim parametrima
     const handleDelete = async (id: string, name: string) => {
         if (window.confirm(`Are you sure you want to delete the product: ${name}?`)) {
             try {
-                await axios.delete(`${BASE_URL}/products/${id}`); 
+                // 2. Korišćenje axiosInstance.delete (šalje token automatski)
+                await axiosInstance.delete(`/products/${id}`); 
                 alert(`Product ${name} successfully deleted.`);
                 refetch();
             } catch (err: any) {
@@ -48,7 +48,6 @@ const ProductListAdmin: React.FC = () => {
         }
     };
     
-    // Pagination handler
     const handlePageChange = (page: number) => {
         if (page > 0 && page <= totalPages) {
             setCurrentPage(page);
@@ -56,20 +55,18 @@ const ProductListAdmin: React.FC = () => {
         }
     };
 
-    // Prikaz headera (dupliran kod u loading/error stanjima radi tvog originalnog dizajna)
     const renderHeader = () => (
         <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-bold text-gray-800">Product Management</h2>
             <Link to="/admin/products/new">
-                <button 
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer"
-                >
+                <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition cursor-pointer">
                     + Add New Product
                 </button>
             </Link>
         </div>
     );
 
+    // Ostatak tvog JSX-a ostaje ISTI (tabele, dugmići, paginacija)...
     if (loading && products.length === 0) {
         return (
             <div>
@@ -83,7 +80,7 @@ const ProductListAdmin: React.FC = () => {
         return (
             <div>
                 {renderHeader()}
-                <div className="text-center py-8 text-red-500">Error: {error.message}</div>
+                <div className="text-center py-8 text-red-500">Error fetching products.</div>
             </div>
         );
     }
@@ -126,9 +123,7 @@ const ProductListAdmin: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-center space-x-2">
                                             <Link to={`/admin/products/edit/${product._id}`}>
-                                                <button
-                                                    className="text-white bg-indigo-600 hover:bg-indigo-700 py-1.5 px-4 rounded-md transition duration-150 shadow-md inline-flex items-center cursor-pointer"
-                                                >
+                                                <button className="text-white bg-indigo-600 hover:bg-indigo-700 py-1.5 px-4 rounded-md transition duration-150 shadow-md inline-flex items-center cursor-pointer">
                                                     Edit
                                                 </button>
                                             </Link>
@@ -145,7 +140,7 @@ const ProductListAdmin: React.FC = () => {
                         </table>
                     </div>
                     
-                    {/* Pagination */}
+                    {/* Pagination - ostaje isto */}
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center space-x-2 mt-8">
                             <button
@@ -159,11 +154,9 @@ const ProductListAdmin: React.FC = () => {
                             >
                                 &laquo; Previous
                             </button>
-
                             <span className="px-4 py-2 text-sm font-medium text-gray-700">
                                 Page {currentPage} of {totalPages}
                             </span>
-
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}

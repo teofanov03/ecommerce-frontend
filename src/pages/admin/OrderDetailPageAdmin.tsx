@@ -1,26 +1,40 @@
 // src/pages/admin/OrderDetailPageAdmin.tsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import useFetch from '../../hooks/useFetch';
-import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import axiosInstance from '../../api/axios'; // Importujemo naš axios sa tokenom
 import type { Order, OrderItem, ShippingInfo } from '../../types/Order';
 
 const OrderDetailPageAdmin: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  // Fetch order using generic type Order
-  const { data: order, loading, error, refetch } = useFetch<Order>(`${BASE_URL}/orders/${id}`);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // State za update statusa
   const [newStatus, setNewStatus] = useState<Order['orderStatus']>('Processing');
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
-  // Sync newStatus kada se order učita
+  // Funkcija za dobavljanje podataka (zamenjuje useFetch)
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get(`/orders/${id}`);
+      // Backend obično pakuje u .data polje
+      const fetchedOrder = res.data.data || res.data;
+      setOrder(fetchedOrder);
+      setNewStatus(fetchedOrder.orderStatus);
+      setError(null);
+    } catch (err: any) {
+      console.error('Error fetching order details:', err);
+      setError('Could not load order details. Check if you are logged in as admin.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (order) setNewStatus(order.orderStatus);
-  }, [order]);
+    if (id) fetchOrderDetails();
+  }, [id]);
 
   // Pomoćne funkcije
   const formatDate = (dateString?: string) => (dateString ? new Date(dateString).toLocaleString('en-US') : 'N/A');
@@ -39,11 +53,12 @@ const OrderDetailPageAdmin: React.FC = () => {
     if (!order || newStatus === order.orderStatus) return alert('Status is already set to this value.');
     setIsUpdating(true);
     try {
-      await axios.put(`${BASE_URL}/orders/${id}`, { orderStatus: newStatus });
+      // KORISTIMO axiosInstance da bi poslao token
+      await axiosInstance.put(`/orders/${id}`, { orderStatus: newStatus });
       alert(`Order status successfully updated to ${newStatus}.`);
-      refetch();
+      fetchOrderDetails(); // Refresh podataka nakon update-a
     } catch (err: any) {
-      console.error('Error updating order status:', err.response?.data || err.message);
+      console.error('Error updating order status:', err);
       alert('Failed to update status.');
     } finally {
       setIsUpdating(false);
@@ -51,19 +66,19 @@ const OrderDetailPageAdmin: React.FC = () => {
   };
 
   if (loading) return <div className="text-center py-8 pt-20">Loading order details...</div>;
-  if (error) return <div className="text-center py-8 pt-20 text-red-500">Error: Could not load order.</div>;
+  if (error) return <div className="text-center py-8 pt-20 text-red-500">{error}</div>;
   if (!order) return <div className="text-center py-8 pt-20">No order found with ID: {id}</div>;
 
   const { shippingInfo, orderItems, totalPrice, orderStatus, createdAt, deliveredAt } = order;
   const shipping: ShippingInfo = shippingInfo || {} as ShippingInfo;
 
+  // TVOJ ORIGINALNI CSS OSTAJE NETAKNUT
   return (
     <div className="container mx-auto px-4 py-12 pt-20">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
         Order Details <span className="text-indigo-600">#{id?.substring(0, 8)}</span>
       </h1>
 
-      {/* STATUS */}
       <div className="flex justify-between items-center mb-8 p-6 bg-white shadow-lg rounded-lg border-l-4 border-indigo-500">
         <div>
           <span className="text-lg font-semibold text-gray-700 block">Current Status:</span>
@@ -96,7 +111,6 @@ const OrderDetailPageAdmin: React.FC = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* SHIPPING INFO */}
         <div className="lg:col-span-1 p-6 bg-white shadow-lg rounded-lg border border-gray-100 h-fit">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Shipping Information</h2>
           <p><strong>Recipient:</strong> {shipping.fullName || 'N/A'}</p>
@@ -110,9 +124,7 @@ const OrderDetailPageAdmin: React.FC = () => {
           <p className="text-sm text-gray-600"><strong>Delivered:</strong> {formatDate(deliveredAt)}</p>
         </div>
 
-        {/* ORDER ITEMS & FINANCIAL SUMMARY */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Items */}
           <div className="p-6 bg-white shadow-lg rounded-lg border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Items Ordered</h2>
             <div className="space-y-4">
@@ -139,7 +151,6 @@ const OrderDetailPageAdmin: React.FC = () => {
             </div>
           </div>
 
-          {/* Financial Summary */}
           <div className="p-6 bg-white shadow-lg rounded-lg border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Financial Summary</h2>
             <div className="space-y-2 text-lg">
