@@ -1,144 +1,98 @@
-// src/pages/admin/OrderListAdmin.tsx
-import React from 'react';
-import useFetch from '../../hooks/useFetch';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../../api/axios';
 import { Link } from 'react-router-dom';
 import type { Order } from '../../types/Order';
-
-// Tip za odgovor sa backenda jer tvoj kontroler pakuje u .data polje
-interface OrdersFetchResponse {
-    data: Order[];
-}
+import { toast } from 'react-hot-toast';
 
 const OrderListAdmin: React.FC = () => {
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
-    
-    // Fetch all orders sa Order interfejsom
-    const { data: fetchResponse, loading, error, refetch } = useFetch<OrdersFetchResponse>(`${BASE_URL}/orders`); 
-    const orders = fetchResponse?.data || [];
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-    // Funkcija za promenu statusa
-    const handleUpdateStatus = async (orderId: string, currentStatus: Order['orderStatus']) => {
-        let nextStatus: Order['orderStatus'];
-        if (currentStatus === 'Processing') {
-            nextStatus = 'Shipped';
-        } else if (currentStatus === 'Shipped') {
-            nextStatus = 'Delivered';
-        } else {
-            alert(`Cannot change status from ${currentStatus}.`);
-            return;
-        }
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            setError(false);
+            
+            // Koristimo axiosInstance koji SADA ima ispravan 'token' ključ
+            const res = await axiosInstance.get('/orders');
+            
+            // DEBUG: Ovde ćemo videti šta tačno stiže i kako se zove ID
+            console.log("Podaci sa servera:", res.data);
 
-        if (window.confirm(`Are you sure you want to change order status from ${currentStatus} to ${nextStatus}?`)) {
-            try {
-                await axios.put(`${BASE_URL}/orders/${orderId}`, { orderStatus: nextStatus });
-                alert(`Order ${orderId.substring(0, 8)}... status updated to ${nextStatus}.`);
-                refetch();
-            } catch (err: any) {
-                console.error('Error updating order status:', err);
-                alert('Status update failed. Check the console.');
-            }
+            // Prilagodi putanju ako backend pakuje u res.data.data
+            const data = res.data.data || res.data;
+            setOrders(data);
+        } catch (err: any) {
+            console.error('Greška pri dohvatanju porudžbina:', err);
+            setError(true);
+            toast.error(err.response?.status === 401 ? "Niste autorizovani (Admin only)" : "Greška na serveru");
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Funkcija za brisanje
-    const handleDelete = async (orderId: string) => {
-        if (window.confirm("Are you sure you want to delete this order?")) {
-            try {
-                // Popravljen URL: dodat BASE_URL i template literal (``)
-                await axios.delete(`${BASE_URL}/orders/${orderId}`);
-                alert("Order deleted successfully!");
-                refetch();
-            } catch (error) {
-                console.error("Delete failed:", error);
-                alert("Error deleting order.");
-            }
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const handleUpdateStatus = async (orderId: string, currentStatus: string) => {
+        let nextStatus = "";
+        if (currentStatus === 'Processing') nextStatus = 'Shipped';
+        else if (currentStatus === 'Shipped') nextStatus = 'Delivered';
+        else return;
+
+        try {
+            await axiosInstance.put(`/orders/${orderId}`, { orderStatus: nextStatus });
+            toast.success("Status ažuriran");
+            fetchOrders(); // Refresh liste
+        } catch (err) {
+            toast.error("Greška pri ažuriranju");
         }
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US');
-    };
-
-    const getStatusClasses = (status: Order['orderStatus']) => {
-        switch (status) {
-            case 'Delivered': return 'bg-green-100 text-green-800';
-            case 'Shipped': return 'bg-blue-100 text-blue-800';
-            case 'Processing': return 'bg-yellow-100 text-yellow-800';
-            default: return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    if (loading) return <div className="text-center py-8">Loading orders...</div>;
-    if (error) return <div className="text-center py-8 text-red-500">Error fetching orders.</div>;
-    if (orders.length === 0) return <div className="text-center py-8">No orders found.</div>;
+    if (loading) return <div className="text-center py-10">Učitavanje porudžbina...</div>;
+    if (error) return <div className="text-center py-10 text-red-500">Greška 401: Proveri da li si ulogovan kao Admin.</div>;
 
     return (
-        <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Order Management</h2>
-            
-            <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+        <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">Upravljanje porudžbinama</h2>
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                <table className="min-w-full">
+                    <thead className="bg-gray-100">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th> 
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left">Order ID</th>
+                            <th className="px-6 py-3 text-left">Kupac</th>
+                            <th className="px-6 py-3 text-left">Ukupno</th>
+                            <th className="px-6 py-3 text-left">Status</th>
+                            <th className="px-6 py-3 text-center">Akcije</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody>
                         {orders.map((order) => (
-                            <tr key={order._id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {order._id.substring(0, 8)}...
+                            <tr key={order._id} className="border-b hover:bg-gray-50">
+                                <td className="px-6 py-4 font-mono text-sm text-blue-600">
+                                    {/* OVDE JE REŠENJE ZA ID: Koristimo _id */}
+                                    {order._id ? `#${order._id.substring(order._id.length - 6)}` : "Nema ID-a"}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {order.shippingInfo?.fullName || order.shippingInfo?.email || 'N/A'}
+                                <td className="px-6 py-4">
+                                    {order.shippingInfo?.fullName || "Nepoznato"}
                                 </td>
-                                <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                                    {order.shippingInfo?.address}, {order.shippingInfo?.city} ({order.shippingInfo?.zipCode})
+                                <td className="px-6 py-4 font-bold">
+                                    ${order.totalPrice?.toFixed(2)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold">
-                                    ${order.totalPrice.toFixed(2)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {formatDate(order.createdAt)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span 
-                                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(order.orderStatus)}`}
-                                    >
-                                        {order.orderStatus || 'Processing'} 
+                                <td className="px-6 py-4">
+                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                        {order.orderStatus}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-center text-sm font-medium">
-                                    <div className="flex flex-col items-center space-y-2">
-                                        {order.orderStatus !== 'Delivered' && order.orderStatus !== 'Cancelled' && (
-                                            <button
-                                                onClick={() => handleUpdateStatus(order._id, order.orderStatus)}
-                                                className="bg-indigo-500 text-white py-1 px-2 rounded-lg hover:bg-indigo-600 transition font-medium text-xs w-full max-w-25"
-                                            >
-                                                Next Status
-                                            </button>
-                                        )}
-                                        
-                                        <Link to={`/admin/orders/${order._id}`} className="w-full max-w-25">
-                                            <button className="bg-gray-200 text-gray-800 py-1 px-2 rounded-lg hover:bg-gray-300 transition font-medium text-xs w-full">
-                                                Details
-                                            </button>
-                                        </Link>
-                                        
-                                        <button 
-                                            onClick={() => handleDelete(order._id)}
-                                            className="bg-red-500 text-white py-1 px-2 rounded-lg hover:bg-red-600 transition font-medium text-xs w-full max-w-25"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+                                <td className="px-6 py-4 text-center">
+                                    <button 
+                                        onClick={() => handleUpdateStatus(order._id, order.orderStatus)}
+                                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                                    >
+                                        Sledeći status
+                                    </button>
                                 </td>
                             </tr>
                         ))}
