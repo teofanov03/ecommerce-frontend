@@ -25,7 +25,7 @@ const OrderTrackingPage: React.FC = () => {
 
     try {
       const response = await axios.get<{ data: Order }>(`${BASE_URL}/orders/track/${orderId}`);
-
+      console.log("Tracking Response:", response.data);
       if (response.data?.data) {
         setOrder(response.data.data);
       } else {
@@ -99,7 +99,7 @@ const OrderTrackingPage: React.FC = () => {
           <h3 className="text-2xl font-semibold mb-4 text-gray-800">Order Details:</h3>
 
           <p className="mb-2">
-            <span className="font-medium">Order ID:</span> {order._id}
+            <span className="font-medium">Order ID:</span> {order._id || "No ID returned"}
           </p>
           <p className="mb-2">
             <span className="font-medium">Total Price:</span> ${order.totalPrice.toFixed(2)}
