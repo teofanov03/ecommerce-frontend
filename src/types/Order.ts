@@ -26,6 +26,7 @@ export interface OrderItem {
 
 export interface Order {
   _id: string;
+  orderId?: string;
   shippingInfo: ShippingInfo;
   orderItems: OrderItem[];
   totalPrice: number;

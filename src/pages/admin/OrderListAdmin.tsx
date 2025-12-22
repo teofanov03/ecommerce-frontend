@@ -1,42 +1,48 @@
-// src/pages/admin/OrderListAdmin.tsx
-import React from 'react';
-import useFetch from '../../hooks/useFetch';
+import React, { useEffect, useState } from 'react';
 import axiosInstance from '../../api/axios';
 import { Link } from 'react-router-dom';
 import type { Order } from '../../types/Order';
 
-interface OrdersFetchResponse {
-    data: Order[];
-}
-
 const OrderListAdmin: React.FC = () => {
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
-    
-    const { data: fetchResponse, loading, error, refetch } = useFetch<OrdersFetchResponse>(`${BASE_URL}/orders`); 
-    const orders = fetchResponse?.data || [];
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-    // DEBUG: Pogledaj u konzolu da vidiš strukturu ID-a
-    console.log("Admin Orders Data:", orders);
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            // axiosInstance koristi interceptor koji uzima localStorage.getItem('token')
+            const res = await axiosInstance.get('/orders');
+            const data = res.data.data || res.data;
+            setOrders(data);
+            setError(false);
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
 
     const handleUpdateStatus = async (orderId: string, currentStatus: Order['orderStatus']) => {
         let nextStatus: Order['orderStatus'];
-        if (currentStatus === 'Processing') {
-            nextStatus = 'Shipped';
-        } else if (currentStatus === 'Shipped') {
-            nextStatus = 'Delivered';
-        } else {
+        if (currentStatus === 'Processing') nextStatus = 'Shipped';
+        else if (currentStatus === 'Shipped') nextStatus = 'Delivered';
+        else {
             alert(`Cannot change status from ${currentStatus}.`);
             return;
         }
 
-        if (window.confirm(`Are you sure you want to change order status from ${currentStatus} to ${nextStatus}?`)) {
+        if (window.confirm(`Are you sure you want to change status to ${nextStatus}?`)) {
             try {
-                // Koristimo axiosInstance (sa malim 'a') jer on šalje token
                 await axiosInstance.put(`/orders/${orderId}`, { orderStatus: nextStatus });
                 alert(`Order updated to ${nextStatus}.`);
-                refetch();
-            } catch (err: any) {
-                console.error('Error updating order status:', err);
+                fetchOrders(); // Ovo menja tvoj stari refetch()
+            } catch (err) {
                 alert('Status update failed.');
             }
         }
@@ -47,17 +53,14 @@ const OrderListAdmin: React.FC = () => {
             try {
                 await axiosInstance.delete(`/orders/${orderId}`);
                 alert("Order deleted successfully!");
-                refetch();
+                fetchOrders();
             } catch (error) {
-                console.error("Delete failed:", error);
                 alert("Error deleting order.");
             }
         }
     };
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US');
-    };
+    const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US');
 
     const getStatusClasses = (status: Order['orderStatus']) => {
         switch (status) {
@@ -69,13 +72,13 @@ const OrderListAdmin: React.FC = () => {
     };
 
     if (loading) return <div className="text-center py-8">Loading orders...</div>;
-    if (error) return <div className="text-center py-8 text-red-500">Error fetching orders.</div>;
+    if (error) return <div className="text-center py-8 text-red-500">Error fetching orders (401 Unauthorized). Check your login.</div>;
     if (orders.length === 0) return <div className="text-center py-8">No orders found.</div>;
 
+    // ODAVDE KREĆE TVOJ ORIGINALNI CSS KOJI NISAM DIRAO
     return (
         <div>
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Order Management</h2>
-            
             <div className="bg-white shadow-md rounded-lg overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -93,7 +96,6 @@ const OrderListAdmin: React.FC = () => {
                         {orders.map((order) => (
                             <tr key={order._id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {/* Koristimo _id jer ga MongoDB tako šalje */}
                                     {order._id ? order._id.substring(0, 8) : 'N/A'}...
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -109,9 +111,7 @@ const OrderListAdmin: React.FC = () => {
                                     {formatDate(order.createdAt)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span 
-                                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(order.orderStatus)}`}
-                                    >
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(order.orderStatus)}`}>
                                         {order.orderStatus || 'Processing'} 
                                     </span>
                                 </td>
@@ -125,13 +125,11 @@ const OrderListAdmin: React.FC = () => {
                                                 Next Status
                                             </button>
                                         )}
-                                        
                                         <Link to={`/admin/orders/${order._id}`} className="w-full max-w-25">
                                             <button className="bg-gray-200 text-gray-800 py-1 px-2 rounded-lg hover:bg-gray-300 transition font-medium text-xs w-full">
                                                 Details
                                             </button>
                                         </Link>
-                                        
                                         <button 
                                             onClick={() => handleDelete(order._id)}
                                             className="bg-red-500 text-white py-1 px-2 rounded-lg hover:bg-red-600 transition font-medium text-xs w-full max-w-25"

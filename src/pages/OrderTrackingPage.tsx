@@ -99,7 +99,7 @@ const OrderTrackingPage: React.FC = () => {
           <h3 className="text-2xl font-semibold mb-4 text-gray-800">Order Details:</h3>
 
           <p className="mb-2">
-            <span className="font-medium">Order ID:</span> {order._id || "No ID returned"}
+            <span className="font-medium">Order ID:</span> {order.orderId || order._id}
           </p>
           <p className="mb-2">
             <span className="font-medium">Total Price:</span> ${order.totalPrice.toFixed(2)}
