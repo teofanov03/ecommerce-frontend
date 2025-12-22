@@ -8,17 +8,19 @@ import { Product } from '../types/Product.js';
 const ProductDetailPage = () => {
     // 1. Dohvatamo ID proizvoda iz URL-a
     const { id } = useParams<{ id: string }>(); 
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL; 
 
-    // 2. Dohvatamo specifičan proizvod (koristeći novi API endpoint)
-    const { data: fetchResponse, loading, error } = useFetch<{ data: Product }>(`${BASE_URL}/products/${id}`);
+    // 2. KORISTIMO RELATIVNU PUTANJU
+    // Pošto useFetch sada koristi axiosInstance, on sam dodaje BASE_URL
+    const { data: fetchResponse, loading, error } = useFetch<{ data: Product }>(`/products/${id}`);
+    
     const { addToCart } = useCartContext(); 
-const product = fetchResponse?.data;
+    const product = fetchResponse?.data;
+
     if (loading) return <div className="pt-20 text-center">Loading details...</div>;
     if (error || !product) return <div className="pt-20 text-center text-red-500">Product not found!</div>;
 
     const handleAddToCart = () => {
-        addToCart(product, 1); // Uvek dodajemo 1 za sada
+        addToCart(product, 1); 
     };
 
     return (
@@ -51,7 +53,7 @@ const product = fetchResponse?.data;
 
                     <button
                         onClick={handleAddToCart}
-                        className="w-full max-w-xs bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition duration-150 disabled:opacity-50"
+                        className="w-full max-w-xs bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition duration-150 disabled:opacity-50 cursor-pointer"
                         disabled={product.stock === 0}
                     >
                         Add to Cart
