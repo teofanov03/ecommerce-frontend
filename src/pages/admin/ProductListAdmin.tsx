@@ -30,7 +30,7 @@ const ProductListAdmin: React.FC = () => {
     // dobijaćeš 401 kad backend bude zaštićen. 
     // Za sada ostavljamo ovako dok ne vidimo kako se useFetch ponaša.
     const { data: fetchResponse, loading, error, refetch } = useFetch<ProductsFetchResponse>(filterQuery); 
-    
+    console.log("Šta je stiglo sa servera:", fetchResponse);
     const products = fetchResponse?.data || [];
     const totalPages = fetchResponse?.totalPages || 1; 
 
