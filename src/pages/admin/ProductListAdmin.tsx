@@ -29,7 +29,7 @@ const ProductListAdmin: React.FC = () => {
     // Ako useFetch unutra koristi običan fetch/axios bez tokena, 
     // dobijaćeš 401 kad backend bude zaštićen. 
     // Za sada ostavljamo ovako dok ne vidimo kako se useFetch ponaša.
-    const { data: fetchResponse, loading, error, refetch } = useFetch<ProductsFetchResponse>(filterQuery); 
+   const { data: fetchResponse, loading, error, refetch } = useFetch<{ data: Product[]; totalPages: number }>('https://ecommerce-backend-yc11.onrender.com/api/v1/products');
     console.log("Šta je stiglo sa servera:", fetchResponse);
     const products = fetchResponse?.data || [];
     const totalPages = fetchResponse?.totalPages || 1; 
