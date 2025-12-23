@@ -1,16 +1,52 @@
-# React + Vite
+🚀 MERN E-Commerce Project (TypeScript)
+This is a modern Full-Stack e-commerce application built with the MERN stack and TypeScript. The project features a complete shopping system, advanced user profile management, and a robust backend architecture focused on type safety and data integrity.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🛠 Features
+🛒 Shop & Products
+Product Catalog: Dynamic display of products with detailed descriptions and pricing.
 
-Currently, two official plugins are available:
+Advanced Filters: Efficient searching and filtering of products by categories.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Shopping Cart: Full cart functionality including item addition, quantity adjustment, and automated total price calculation.
 
-## React Compiler
+Cloudinary Integration: Optimized product imagery managed and delivered via Cloudinary API.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+👤 User Dashboard & Profile
+Shipping Addresses: Users can manage multiple shipping addresses (Create, Read, Update, Delete).
 
-## Expanding the ESLint configuration
+Order History: Detailed overview of all previous orders, including payment and delivery statuses.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Profile Management: Secure updates for personal information and account credentials.
+
+JWT Authentication: Secure user registration and login system utilizing JSON Web Tokens.
+
+⚙️ Backend & API Arhitecture
+TypeScript Core: Built from the ground up with TypeScript for maximum type safety and maintainable code.
+
+Protected Routes: Custom middleware layer to ensure secure access to user-specific data.
+
+Mongoose Data Modeling: Precise data schemas defined using TypeScript interfaces (IUser, IOrder, IProduct).
+
+RESTful API: Standardized endpoints for seamless frontend communication:
+
+GET /api/v1/user/profile → Fetch user profile data.
+
+POST /api/v1/user/addresses → Add a new shipping address.
+
+GET /api/v1/orders/myorders → Retrieve personal order history.
+
+🧰 Technologies Used
+Frontend: React, Axios, Bootstrap / Tailwind CSS
+
+Backend: Node.js, Express.js, TypeScript
+
+Database: MongoDB Atlas (Mongoose)
+
+File Storage: Cloudinary
+
+Deployment: Render (Backend), Vercel (Frontend)
+
+Development Tools: tsx (runtime), tsc (production build compiler)
+
+📌 Summary
+This project demonstrates a high level of proficiency in the TypeScript ecosystem and modern backend development. By utilizing a strictly typed system, the application ensures reliability and prevents common runtime errors. It showcases my ability to connect a complex React frontend with a professional Node.js API, leveraging industry-standard cloud services for databases and media storage.
