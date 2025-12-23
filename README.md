@@ -36,7 +36,7 @@ POST /api/v1/user/addresses → Add a new shipping address.
 GET /api/v1/orders/myorders → Retrieve personal order history.
 
 🧰 Technologies Used
-Frontend: React, Axios, Bootstrap / Tailwind CSS
+Frontend: React, Axios, Tailwind CSS
 
 Backend: Node.js, Express.js, TypeScript
 
